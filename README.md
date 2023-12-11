@@ -1,0 +1,1 @@
+# Revents sample project to use all latest for React, Vite, Firebase
