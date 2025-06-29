@@ -1,16 +1,15 @@
 import { users } from "../../../lib/data/sampleData";
+import { useAppDispatch, useAppSelector } from "../../../lib/stores/store";
 import type { AppEvent } from "../../../lib/types";
+import { closeForm, createEvent, updateEvent } from "../eventSlice";
 
-type Props = {
-    setFormOpen: (isOpen: boolean) => void;
-    createEvent: (event: AppEvent) => void;
-    updateEvent: (event: AppEvent) => void;
-    selectedEvent: AppEvent | null;
-}
 
-export default function EventForm({setFormOpen, createEvent, updateEvent, selectedEvent} : Props) {
+export default function EventForm() {
 
-   const initialValues = selectedEvent ?? {
+  const dispatch = useAppDispatch();
+  const selectedEvent = useAppSelector(state => state.event.selectedEvent);
+
+  const initialValues = selectedEvent ?? {
     title: '',
     category: '',
     description: '',
@@ -24,24 +23,23 @@ export default function EventForm({setFormOpen, createEvent, updateEvent, select
     const data = Object.fromEntries(formData.entries()) as unknown as AppEvent;
 
     if (selectedEvent) {
-      updateEvent({...selectedEvent, ...data });
-      setFormOpen(false);
+      dispatch(updateEvent({ ...selectedEvent, ...data }));
+       dispatch(closeForm())
       return;
     }
     
-    createEvent({
-      ...data,
-      id: crypto.randomUUID(),
-      hostUid: users[0].uid,
-      attendees: [{
-        id: users[0].uid,
-        displayName: users[0].displayName,
-        photoURL: users[0].photoURL,
-        isHost: true
-      }]
-    });
-
-    setFormOpen(false);
+    dispatch(createEvent({
+        ...data,
+        id: crypto.randomUUID(),
+        hostUid: users[0].uid,
+        attendees: [{
+          id: users[0].uid,
+          displayName: users[0].displayName,
+          photoURL: users[0].photoURL,
+          isHost: true,
+        }],
+      }));
+      dispatch(closeForm())
   }
 
   return (
@@ -64,7 +62,7 @@ export default function EventForm({setFormOpen, createEvent, updateEvent, select
             <input defaultValue={initialValues.venue} 
                 name='venue' type='text' className='input input-lg w-full' placeholder='Venue'/>
             <div className='flex justify-end w-full gap-3'>
-                <button type='button' className='btn btn-neutral' onClick={() => setFormOpen(false)}>Cancel</button>
+                <button onClick={() => dispatch(closeForm())} type='button' className='btn btn-neutral'>Cancel</button>
                 <button type='submit' className='btn btn-primary'>Save</button>
             </div>
         </form>
